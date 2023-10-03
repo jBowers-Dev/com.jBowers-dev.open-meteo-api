@@ -1,0 +1,19 @@
+{
+  "name": "com.900lbs.packagename",
+  "version": "0.0.1",
+  "displayName": "Package Template",
+  "description": "Insert description here.",
+  "repository": {
+    "type": "git",
+    "url": "Insert the repo HTTPS address here"
+  },
+  "samples": [
+    {
+      "displayName": "Core Samples",
+      "description": "Example scenes to see this package in action.",
+      "path": "Samples~/Demo"
+    }
+  ],
+  "hideInEditor": false,
+  "type": "tool"
+}
