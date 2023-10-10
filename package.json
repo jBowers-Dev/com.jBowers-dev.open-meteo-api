@@ -1,11 +1,14 @@
 {
-  "name": "com.jBowers-dev.packagename",
+  "name": "com.jbowersdev.restful-api-manager",
   "version": "0.0.1",
-  "displayName": "Package Template",
-  "description": "Insert description here.",
+  "displayName": "RESTful API Manager",
+  "description": "A tool for accessing any RESTful api.",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.0.2"
+  },
   "repository": {
     "type": "git",
-    "url": "Insert the repo HTTPS address here"
+    "url": "https://github.com/jBowers-Dev/com.jBowers-dev.restful-api-manager.git"
   },
   "samples": [
     {
