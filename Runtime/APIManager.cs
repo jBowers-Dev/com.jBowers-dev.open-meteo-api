@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,7 +13,7 @@ namespace JoshBowersDev.RestAPI.Runtime
         // Fetch the default
         private static RestAPISettings _settings = (RestAPISettings)Resources.Load("Resources/RESTfulAPISettings", typeof(RestAPISettings));
 
-        public static async Task<T> RequestGetAPI(CancellationTokenSource cts, RestAPISettings settings = null)
+        public static async Task<T> RequestGetAPI(CancellationTokenSource cts = null, RestAPISettings settings = null)
         {
             T result = default;
 
@@ -20,16 +21,37 @@ namespace JoshBowersDev.RestAPI.Runtime
             {
                 // Set Request headers
                 client.DefaultRequestHeaders.Accept.Clear();
-                if (!string.IsNullOrEmpty(settings.ContentType))
-                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(settings.ContentType));
-                client.DefaultRequestHeaders.Authorization = GetHeaderValue(settings.GetAuthorizationData());
+
+                if (!settings.ContentTypes.HasFlag(HttpEnums.ContentType.None))
+                {
+                    foreach (HttpEnums.ContentType contentType in Enum.GetValues(typeof(HttpEnums.ContentType)))
+                    {
+                        if (settings.ContentTypes.HasFlag(contentType))
+                        {
+                            string contentTypeString = contentType.ToString().ToLowerInvariant();
+                            MediaTypeWithQualityHeaderValue mediaType = new MediaTypeWithQualityHeaderValue(contentTypeString);
+                            client.DefaultRequestHeaders.Accept.Add(mediaType);
+                        }
+                    }
+                }
+                var auth = GetHeaderValue(settings.GetAuthorizationData());
+                if (auth != null)
+                    client.DefaultRequestHeaders.Authorization = auth;
 
                 // Add Custom Headers
                 if (settings.CustomHeaders != null)
                 {
-                    foreach (var header in settings.CustomHeaders)
+                    try
                     {
-                        client.DefaultRequestHeaders.Add(header.Item1, header.Item2);
+                        foreach (var header in settings.CustomHeaders)
+                        {
+                            client.DefaultRequestHeaders.Add(header.Item1, header.Item2);
+                        }
+                    }
+                    catch (ArgumentException e)
+                    {
+                        Debug.LogError("Header value(s) were null.\n" + e.ToString());
+                        return default;
                     }
                 }
 
@@ -60,16 +82,20 @@ namespace JoshBowersDev.RestAPI.Runtime
                     default:
                         break;
                 }
-
                 // Send off the HTTP Get request
                 HttpResponseMessage response;
                 try
                 {
+                    if (settings.PrintAPIRequest) { Debug.Log($"API Requesting: {requestUrl}"); }
                     response = await client.GetAsync(requestUrl, cts.Token);
                     response.EnsureSuccessStatusCode();
+                    if (settings.PrintAPIRequest) { Debug.Log($"API Requesting: {requestUrl}"); }
                     string responseBody = await response.Content.ReadAsStringAsync();
-                    // Parse and process the response as needed
-                    // Example: result = JsonConvert.DeserializeObject<T>(responseBody);
+                    if (response.IsSuccessStatusCode && settings.PrintAPIResponse)
+                    { Debug.Log($"API Response Received: {responseBody}"); }
+                    result = JsonConvert.DeserializeObject<T>(responseBody);
+                    Debug.Log($"{result}");
+                    return result;
                 }
                 catch (HttpRequestException e)
                 {
@@ -81,7 +107,7 @@ namespace JoshBowersDev.RestAPI.Runtime
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"An error occurred: {e.Message}");
+                    Debug.LogError($"An error occurred: {e.Message} \n{e.StackTrace}");
                 }
             }
 
@@ -133,6 +159,9 @@ namespace JoshBowersDev.RestAPI.Runtime
                         return new AuthenticationHeaderValue("Bearer", (string)auth.Data);
                     }
                     break;
+
+                case AuthenticationType.None:
+                    return null;
 
                 default:
                     break;

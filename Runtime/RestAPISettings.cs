@@ -11,7 +11,8 @@ namespace JoshBowersDev.RestAPI
         APIKey,
         BearerToken,
         Basic,
-        OAuth
+        OAuth,
+        None
     }
 
     public enum HTTPMethod
@@ -74,7 +75,7 @@ namespace JoshBowersDev.RestAPI
         public List<string> CustomParameters;
         public HTTPMethod HTTPMethod; // TBD
         public ParamType ParamType;
-        public HttpEnums.ContentType ContentType;
+        public HttpEnums.ContentType ContentTypes;
         public int TimeoutDuration;
         public int MaxRetries;
         public int RetryDelaySeconds;
