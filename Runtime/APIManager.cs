@@ -94,7 +94,6 @@ namespace JoshBowersDev.RestAPI.Runtime
                     if (response.IsSuccessStatusCode && settings.PrintAPIResponse)
                     { Debug.Log($"API Response Received: {responseBody}"); }
                     result = JsonConvert.DeserializeObject<T>(responseBody);
-                    Debug.Log($"{result}");
                     return result;
                 }
                 catch (HttpRequestException e)
@@ -105,9 +104,10 @@ namespace JoshBowersDev.RestAPI.Runtime
                 {
                     Debug.LogWarning($"Request was canceled: {e.Message}");
                 }
-                catch (Exception e)
+                catch (JsonSerializationException e)
                 {
-                    Debug.LogError($"An error occurred: {e.Message} \n{e.StackTrace}");
+                    Debug.LogError($"JSON Serialization Error: {e.Message}");
+                    // Handle the JSON serialization error here.
                 }
             }
 
